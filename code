@@ -1,0 +1,65 @@
+#include <ESP8266WiFi.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include "MQ135.h"
+#include <Arduino.h>
+#include "ThingSpeak.h"
+ 
+float h, t;
+Adafruit_BME280 bme;
+
+const char* apiKey = "B188N8MI5X2B0OS3";
+const char* ssid = "Ayush";
+const char* password = "ayushsaha";
+const char* server = "api.thingspeak.com";
+
+WiFiClient client;
+void setup(){
+  Serial.begin(9600);   
+  delay(10);
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);  
+  WiFi.begin(ssid, password);
+  
+  while (WiFi.status()!= WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  
+  Serial.println(WiFi.localIP());  
+  if (!bme.begin()){
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    while (1);
+  }
+  ThingSpeak.begin(client);  
+}
+ 
+void loop(){
+  static unsigned long OledTimer=millis();  
+    if (millis() - OledTimer >=10000){
+      OledTimer=millis(); 
+      MQ135 gasSensor = MQ135(A0);
+      float air_quality = gasSensor.getPPM();
+      Serial.print("Air Quality: ");  
+      Serial.print(air_quality);
+      Serial.println("  PPM");   
+      Serial.println();
+      ThingSpeak.setField(1, air_quality);
+      h = bme.readHumidity();
+      t = bme.readTemperature();
+      t = t*1.8+32.0;
+      ThingSpeak.setField(2, t);
+      ThingSpeak.setField(3, h);
+      ThingSpeak.writeFields(1706264, apiKey);  
+      Serial.print("Temperature = ");
+      Serial.println(t);
+      Serial.print("Humidity = ");
+      Serial.println(h);
+ 
+      Serial.println("...............................................");
+    }
+  }
