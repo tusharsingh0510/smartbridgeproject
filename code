@@ -10,8 +10,8 @@ float h, t;
 Adafruit_BME280 bme;
 
 const char* apiKey = "B188N8MI5X2B0OS3";
-const char* ssid = "Ayush";
-const char* password = "ayushsaha";
+const char* ssid = "TUSHAR";
+const char* password = "TUSHARSINGH";
 const char* server = "api.thingspeak.com";
 
 WiFiClient client;
